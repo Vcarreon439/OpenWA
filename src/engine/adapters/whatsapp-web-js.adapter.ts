@@ -129,7 +129,7 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
     this.client.on('ready', () => {
       try {
         const info = this.client?.info;
-        this.phoneNumber = info?.wid?.user || null;
+        this.phoneNumber = info?.wid?._serialized || info?.wid?.user || null;
         this.pushName = info?.pushname || null;
         this.setStatus(EngineStatus.READY);
         this.callbacks.onReady?.(this.phoneNumber || '', this.pushName || '');

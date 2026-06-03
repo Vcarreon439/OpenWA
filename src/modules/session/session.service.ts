@@ -11,11 +11,12 @@ import { Repository, In, DataSource } from 'typeorm';
 import { Session, SessionStatus } from './entities/session.entity';
 import { CreateSessionDto } from './dto';
 import { EngineFactory } from '../../engine/engine.factory';
-import { IWhatsAppEngine, EngineStatus } from '../../engine/interfaces/whatsapp-engine.interface';
+import { IWhatsAppEngine, EngineStatus, IncomingMessage } from '../../engine/interfaces/whatsapp-engine.interface';
 import { createLogger } from '../../common/services/logger.service';
 import { EventsGateway } from '../events/events.gateway';
 import { WebhookService } from '../webhook/webhook.service';
 import { HookManager } from '../../core/hooks';
+import { Message, MessageDirection, MessageStatus } from '../message/entities/message.entity';
 
 interface ReconnectState {
   attempts: number;
@@ -306,6 +307,11 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
               return;
             }
 
+            const msg = finalMessage as IncomingMessage;
+
+            // Persist incoming message to the database
+            void this.saveIncomingMessage(id, msg);
+
             // Dispatch to webhooks with potentially modified message
             void this.webhookService.dispatch(id, 'message.received', finalMessage as Record<string, unknown>);
             // Emit real-time event to WebSocket clients
@@ -477,6 +483,30 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
       id: g.id,
       name: g.name,
     }));
+  }
+
+  private async saveIncomingMessage(sessionId: string, message: IncomingMessage): Promise<void> {
+    try {
+      const repo = this.dataSource.getRepository(Message);
+      const entity = repo.create({
+        sessionId,
+        waMessageId: message.id,
+        chatId: message.chatId,
+        from: message.from,
+        to: message.to,
+        body: message.body,
+        type: message.type,
+        timestamp: message.timestamp,
+        direction: MessageDirection.INCOMING,
+        status: MessageStatus.READ,
+      });
+      await repo.save(entity);
+    } catch (error) {
+      this.logger.error('Failed to persist incoming message', String(error), {
+        sessionId,
+        messageId: message.id,
+      });
+    }
   }
 
   private async updateStatus(id: string, status: SessionStatus): Promise<void> {

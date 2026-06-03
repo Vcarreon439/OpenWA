@@ -27,7 +27,7 @@ export class Session {
   })
   status: SessionStatus;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   phone: string | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true })

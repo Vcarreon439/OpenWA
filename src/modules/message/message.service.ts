@@ -433,7 +433,7 @@ export class MessageService {
       sessionId,
       waMessageId: data.waMessageId,
       chatId: data.chatId,
-      from: session?.phone || 'me',
+      from: session?.phone ? (session.phone.includes('@') ? session.phone : `${session.phone}@c.us`) : 'me',
       to: data.chatId,
       body: data.body,
       type: data.type,
