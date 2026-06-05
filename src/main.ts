@@ -73,8 +73,13 @@ STORAGE_PATH=./data/media
   fs.writeFileSync(generatedEnvPath, minimalConfig);
   console.log('[Bootstrap] Created default configuration at:', generatedEnvPath);
 
-  // Apply merged config (.env already parsed above); now add .env.generated defaults
-  Object.assign(mergedFileConfig, dotenv.parse(minimalConfig));
+  // Apply merged config: minimal defaults first, then .env overrides them
+  const firstRunDefaults = dotenv.parse(minimalConfig);
+  for (const [key, value] of Object.entries(firstRunDefaults)) {
+    if (!(key in mergedFileConfig) && !(key in process.env)) {
+      process.env[key] = value;
+    }
+  }
   for (const [key, value] of Object.entries(mergedFileConfig)) {
     if (!(key in process.env)) {
       process.env[key] = value;

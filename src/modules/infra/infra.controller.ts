@@ -301,9 +301,9 @@ export class InfraController {
       // Engine
       if (config.engine) {
         envLines.push('# WhatsApp Engine');
-        envLines.push(`ENGINE_HEADLESS=${config.engine.headless !== false ? 'true' : 'false'}`);
-        envLines.push(`ENGINE_SESSION_PATH=${config.engine.sessionDataPath || './data/sessions'}`);
-        envLines.push(`ENGINE_BROWSER_ARGS=${config.engine.browserArgs || '--no-sandbox --disable-gpu'}`);
+        envLines.push(`PUPPETEER_HEADLESS=${config.engine.headless !== false ? 'true' : 'false'}`);
+        envLines.push(`SESSION_DATA_PATH=${config.engine.sessionDataPath || './data/sessions'}`);
+        envLines.push(`PUPPETEER_ARGS=${config.engine.browserArgs || '--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-gpu'}`);
         envLines.push('');
       }
 
