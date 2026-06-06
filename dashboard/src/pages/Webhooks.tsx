@@ -160,11 +160,10 @@ export function Webhooks() {
 
   const toggleEditEvent = (event: string) => {
     if (!editWebhook) return;
+    const current = Array.isArray(editWebhook.events) ? editWebhook.events : [];
     setEditWebhook({
       ...editWebhook,
-      events: editWebhook.events.includes(event)
-        ? editWebhook.events.filter(e => e !== event)
-        : [...editWebhook.events, event],
+      events: current.includes(event) ? current.filter(e => e !== event) : [...current, event],
     });
   };
 
@@ -288,7 +287,7 @@ export function Webhooks() {
                   <button
                     key={name}
                     type="button"
-                    className={`event-tag ${editWebhook.events.includes(name) ? 'selected' : ''}`}
+                    className={`event-tag ${Array.isArray(editWebhook.events) && editWebhook.events.includes(name) ? 'selected' : ''}`}
                     onClick={() => toggleEditEvent(name)}
                   >
                     {name}
@@ -383,7 +382,7 @@ export function Webhooks() {
                     <ExternalLink size={14} />
                   </span>
                   <span className="events-cell">
-                    {webhook.events.map((event: string) => (
+                    {(Array.isArray(webhook.events) ? webhook.events : []).map((event: string) => (
                       <span key={event} className="event-tag">
                         {event}
                       </span>

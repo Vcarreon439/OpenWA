@@ -6,10 +6,22 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  ValueTransformer,
 } from 'typeorm';
 import { Session } from '../../session/entities/session.entity';
 import { DateTransformer } from '../../../common/transformers/date.transformer';
 import { jsonColumnType, dateColumnType } from '../../../common/utils/column-types';
+
+const eventsTransformer: ValueTransformer = {
+  to: (value: string[]) => value,
+  from: (value: unknown): string[] => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try { return JSON.parse(value) as string[]; } catch { return []; }
+    }
+    return [];
+  },
+};
 
 @Entity('webhooks')
 export class Webhook {
@@ -26,7 +38,7 @@ export class Webhook {
   @Column({ type: 'varchar', length: 2048 })
   url: string;
 
-  @Column({ type: jsonColumnType(), default: '["message.received"]' })
+  @Column({ type: jsonColumnType(), default: '["message.received"]', transformer: eventsTransformer })
   events: string[];
 
   @Column({ type: 'varchar', length: 255, nullable: true })
